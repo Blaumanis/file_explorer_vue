@@ -1,0 +1,9 @@
+@import './base.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+svg {
+  width: 20px !important;
+  height: 20px !important;
+}
