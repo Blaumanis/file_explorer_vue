@@ -46,13 +46,15 @@ import { ref, onMounted, toRaw } from 'vue'
 import axios from 'axios'
 import type { FileNode } from '@/utils/types'
 import { structureFilePaths } from '@/utils/structureFilePaths'
+import { useFileTree } from '@/utils/useFileTree'
 import FileExplorer from '@/components/FileExplorer.vue'
 import Button from '@/components/Button.vue'
 import Modal from '@/components/Modal.vue'
 import Title from '@/components/Title.vue'
 
 // State management using refs
-const fileTree = ref([])
+const { fileTree, saveFileTreeToLocalStorage, addFolder, addFile, deleteNode } =
+  useFileTree()
 const loading = ref(true)
 const error = ref(null)
 const isCreatingFolder = ref(false)
@@ -91,44 +93,6 @@ onMounted(() => {
   }
 })
 
-// Save file tree to local storage
-const saveFileTreeToLocalStorage = (tree) => {
-  localStorage.setItem('fileTree', JSON.stringify(tree))
-}
-
-// Handle adding a new folder to the correct path within the file tree
-const addFolder = (
-  targetPath: string,
-  nodes: FileNode[],
-  folderName: string,
-  currentPath = ''
-): FileNode[] => {
-  return nodes.map((node) => {
-    const fullPath = currentPath ? `${currentPath}/${node.name}` : node.name
-
-    if (node.type === 'directory' && fullPath === targetPath) {
-      return {
-        ...node,
-        children: node.children
-          ? [
-              ...node.children,
-              { type: 'directory', name: folderName, children: [] },
-            ]
-          : [{ type: 'directory', name: folderName, children: [] }],
-      }
-    }
-
-    if (node.type === 'directory' && node.children) {
-      return {
-        ...node,
-        children: addFolder(targetPath, node.children, folderName, fullPath),
-      }
-    }
-
-    return node
-  })
-}
-
 // Add new folder to the selected path
 const handleAddFolder = () => {
   const updatedTree =
@@ -141,45 +105,10 @@ const handleAddFolder = () => {
 
   fileTree.value = updatedTree
   saveFileTreeToLocalStorage(updatedTree)
-  resetFolderCreationState()
+  clearCreationState()
 }
 
-// Reset state after folder creation
-const resetFolderCreationState = () => {
-  isCreatingFolder.value = false
-  newFolderName.value = ''
-}
-
-// Handle adding a new file to the correct path within the file tree
-const addFile = (
-  targetPath: string,
-  nodes: FileNode[],
-  fileName: string,
-  currentPath = ''
-): FileNode[] => {
-  return nodes.map((node) => {
-    const fullPath = currentPath ? `${currentPath}/${node.name}` : node.name
-
-    if (node.type === 'directory' && fullPath === targetPath) {
-      return {
-        ...node,
-        children: node.children
-          ? [...node.children, { type: 'file', name: fileName }]
-          : [{ type: 'file', name: fileName }],
-      }
-    }
-
-    if (node.type === 'directory' && node.children) {
-      return {
-        ...node,
-        children: addFile(targetPath, node.children, fileName, fullPath),
-      }
-    }
-
-    return node
-  })
-}
-
+// Add new file to the selected path
 const handleAddFile = () => {
   const updatedTree =
     expandedDirPath.value !== 'root'
@@ -188,61 +117,34 @@ const handleAddFile = () => {
 
   fileTree.value = updatedTree
   saveFileTreeToLocalStorage(updatedTree)
-  resetFileCreationState()
+  clearCreationState()
 }
 
-// Reset state after file creation
-const resetFileCreationState = () => {
-  isCreatingFile.value = false
+// Toggle creation state for file or folder
+const handleToggleCreation = (type: 'file' | 'folder') => {
   newFileName.value = ''
+  newFolderName.value = ''
+
+  if (type === 'file') {
+    isCreatingFile.value = !isCreatingFile.value
+    isCreatingFolder.value = false
+  } else if (type === 'folder') {
+    isCreatingFolder.value = !isCreatingFolder.value
+    isCreatingFile.value = false
+  }
 }
 
 // Toggle folder creation state
 const handleCreateFolder = () => {
-  newFileName.value = ''
-  newFolderName.value = ''
-  isCreatingFolder.value = !isCreatingFolder.value
-  isCreatingFile.value = false
+  handleToggleCreation('folder')
 }
 
 // Toggle file creation state
 const handleCreateFile = () => {
-  newFolderName.value = ''
-  newFileName.value = ''
-  isCreatingFile.value = !isCreatingFile.value
-  isCreatingFolder.value = false
+  handleToggleCreation('file')
 }
 
-const clearCreationState = () => {
-  isCreatingFile.value = false
-  isCreatingFolder.value = false
-}
-
-// Delete a node by path
-const deleteNode = (
-  nodes: FileNode[],
-  pathToDelete: string,
-  parentPath: string = ''
-): FileNode[] => {
-  return nodes.reduce<FileNode[]>((result, node) => {
-    const fullPath = parentPath ? `${parentPath}/${node.name}` : node.name
-
-    if (fullPath === pathToDelete) {
-      return result // Skip this node
-    }
-
-    // Recursively check children if it's a directory
-    if (node.type === 'directory' && node.children) {
-      const filteredChildren = deleteNode(node.children, pathToDelete, fullPath)
-      result.push({ ...node, children: filteredChildren })
-    } else {
-      result.push(node)
-    }
-
-    return result
-  }, [])
-}
-
+// Delete file/folder by the selected path
 const handleDelete = (path: string) => {
   const updatedTree = deleteNode(fileTree.value, path)
   fileTree.value = updatedTree
@@ -256,10 +158,17 @@ const handleCollapseFileExplorer = () => {
     setTimeout(() => (shouldRenderFileTree.value = false), 300)
   } else {
     shouldRenderFileTree.value = true
-    setTimeout(() => (isShowingFileTree.value = true), 10)
+    setTimeout(() => (isShowingFileTree.value = true), 100)
   }
-  isCreatingFolder.value = false
+  clearCreationState()
+}
+
+// Reset the file and folder creation values
+const clearCreationState = () => {
   isCreatingFile.value = false
+  isCreatingFolder.value = false
+  newFolderName.value = ''
+  newFileName.value = ''
 }
 </script>
 

@@ -7,8 +7,10 @@
       :value="inputValue"
       @input="handleInputChange"
       :placeholder="isCreatingFolder ? 'Enter folder name' : 'Enter file name'"
-      @keypress="handleKeyPress"
+      @keydown="handleKeyPress"
       class="text-black placeholder:text-black px-[5px] outline-none rounded-sm"
+      minlength="3"
+      required
     />
   </li>
 </template>
@@ -25,40 +27,56 @@ interface InputFieldProps {
   newFileName: string
   handleOnKeyPress: () => void
   handleInputChange: (e: Event) => void
+  clearCreationState: () => void
 }
 
-const props = defineProps<InputFieldProps>()
+const props = defineProps<InputFieldProps>() // Defines props with TypeScript types
 
+// Computed property to determine the current input value (folder name or file name)
 const inputValue = computed(() =>
   props.isCreatingFolder ? props.newFolderName : props.newFileName
 )
 
-// Add a ref for the input element
+// Reference to the input field DOM element to programmatically set focus
 const inputRef = ref<HTMLInputElement | null>(null)
 
-// Handle input changes
+// Handles input changes, passing the event back to the parent component via props
 const handleInputChange = (event: Event) => {
   props.handleInputChange(event)
 }
 
-// Handle Enter key press
+// // Handles key press events, checking if the "Enter" or "Escape" key was pressed, and calls the corresponding function
 const handleKeyPress = (event: KeyboardEvent) => {
-  if (event.key === 'Enter') {
-    props.handleOnKeyPress()
+  const input = inputRef.value
+
+  // Handle Enter key
+  if (event.key === 'Enter' || event.code === 'Enter') {
+    // If the input is invalid, prevent further action and trigger validation
+    if (!input?.checkValidity()) {
+      input?.reportValidity() // Show the validation message
+      return // Exit the function
+    }
+    props.handleOnKeyPress() // Call the parent method for the Enter key
+  }
+
+  // Handle Escape key
+  if (event.key === 'Escape' || event.code === 'Escape') {
+    props.clearCreationState()
   }
 }
 
-// Watch for changes in isCreatingFolder or isCreatingFile
+// Watch for changes in the `isCreatingFolder` prop
+// If the user switches to creating a folder, focus the input field
 watch(
-  () => props.isCreatingFolder,
+  () => props.isCreatingFolder, // Watch the isCreatingFolder prop
   (newVal) => {
     if (newVal) {
       nextTick(() => {
-        inputRef.value?.focus()
+        inputRef.value?.focus() // Focus the input field once the DOM updates
       })
     }
   },
-  { immediate: true }
+  { immediate: true } // Run the watcher immediately when the component is created
 )
 
 watch(

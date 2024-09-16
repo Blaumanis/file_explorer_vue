@@ -65,6 +65,7 @@
             :newFileName="newFileName"
             :handleInputChange="handleInputChange"
             :handleOnKeyPress="handleOnKeyPress"
+            :clearCreationState="clearCreationState"
           />
         </ul>
       </li>
@@ -78,6 +79,7 @@
         :newFileName="newFileName"
         :handleInputChange="handleInputChange"
         :handleOnKeyPress="handleOnKeyPress"
+        :clearCreationState="clearCreationState"
       />
     </ul>
   </div>
