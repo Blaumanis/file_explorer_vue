@@ -56,7 +56,7 @@ import Title from '@/components/Title.vue'
 const { fileTree, saveFileTreeToLocalStorage, addFolder, addFile, deleteNode } =
   useFileTree()
 const loading = ref(true)
-const error = ref(null)
+const error = ref('')
 const isCreatingFolder = ref(false)
 const newFolderName = ref('')
 const isCreatingFile = ref(false)
@@ -95,7 +95,7 @@ onMounted(() => {
 
 // Add new folder to the selected path
 const handleAddFolder = () => {
-  const updatedTree =
+  const updatedTree: FileNode[] =
     expandedDirPath.value !== 'root'
       ? addFolder(expandedDirPath.value, fileTree.value, newFolderName.value)
       : [
@@ -104,24 +104,24 @@ const handleAddFolder = () => {
         ]
 
   fileTree.value = updatedTree
-  saveFileTreeToLocalStorage(updatedTree)
+  saveFileTreeToLocalStorage(updatedTree as FileNode[])
   clearCreationState()
 }
 
 // Add new file to the selected path
 const handleAddFile = () => {
-  const updatedTree =
+  const updatedTree: FileNode[] =
     expandedDirPath.value !== 'root'
       ? addFile(expandedDirPath.value, fileTree.value, newFileName.value)
       : [...fileTree.value, { type: 'file', name: newFileName.value }]
 
   fileTree.value = updatedTree
-  saveFileTreeToLocalStorage(updatedTree)
+  saveFileTreeToLocalStorage(updatedTree as FileNode[])
   clearCreationState()
 }
 
 // Toggle creation state for file or folder
-const handleToggleCreation = (type: 'file' | 'folder') => {
+const handleToggleCreation = (type: string) => {
   newFileName.value = ''
   newFolderName.value = ''
 
@@ -148,7 +148,7 @@ const handleCreateFile = () => {
 const handleDelete = (path: string) => {
   const updatedTree = deleteNode(fileTree.value, path)
   fileTree.value = updatedTree
-  saveFileTreeToLocalStorage(updatedTree)
+  saveFileTreeToLocalStorage(updatedTree as FileNode[])
 }
 
 // Toggle File Explorer visibility with animation delay

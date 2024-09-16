@@ -17,8 +17,8 @@ export type FileExplorerProps = {
   isCreatingFolder: boolean
   newFolderName: string
   setNewFolderName: (name: string) => void
-  handleAddFolder: (path: string) => void
-  handleAddFile: (path: string) => void
+  handleAddFolder: () => void
+  handleAddFile: () => void
   newFileName: string
   setNewFileName: (name: string) => void
   isCreatingFile: boolean
