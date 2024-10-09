@@ -87,40 +87,74 @@ export function useFileTree() {
     })
   }
 
-  // Function to delete a node from the file tree
   const deleteNode = (
     nodes: FileNode[], // The current file tree or subtree
-    pathToDelete: string, // The path of the node to delete
+    pathToDelete: string, // The full path of the node to delete
     parentPath: string = '' // The path of the parent node (used for recursion)
   ): FileNode[] => {
-    // Reduce the nodes to a new array, excluding the node to delete
     return nodes.reduce<FileNode[]>((result, node) => {
       // Construct the full path of the current node
       const fullPath = parentPath ? `${parentPath}/${node.name}` : node.name
 
       // If the full path matches the path to delete, skip this node
       if (fullPath === pathToDelete) {
-        return result // Skip this node
+        return result // Skip this node, effectively deleting it
       }
 
       // If the current node is a directory and has children, recurse into its children
       if (node.type === 'directory' && node.children) {
-        // Filter out the deleted node from the children
+        // Recursively delete the node from its children
         const filteredChildren = deleteNode(
           node.children,
           pathToDelete,
-          fullPath // Pass the current path as the new parent path
+          fullPath
         )
-        // Add the current node with the filtered children to the result
+
+        // Only push the directory back if it has remaining children or wasn't the target
         result.push({ ...node, children: filteredChildren })
       } else {
-        // Add the current node to the result
+        // If it's a file or directory without children, add it to the result as is
         result.push(node)
       }
 
       return result
     }, [])
   }
+
+  // // Function to delete a node from the file tree
+  // const deleteNode = (
+  //   nodes: FileNode[], // The current file tree or subtree
+  //   pathToDelete: string, // The path of the node to delete
+  //   parentPath: string = '' // The path of the parent node (used for recursion)
+  // ): FileNode[] => {
+  //   // Reduce the nodes to a new array, excluding the node to delete
+  //   return nodes.reduce<FileNode[]>((result, node) => {
+  //     // Construct the full path of the current node
+  //     const fullPath = parentPath ? `${parentPath}/${node.name}` : node.name
+
+  //     // If the full path matches the path to delete, skip this node
+  //     if (fullPath === pathToDelete) {
+  //       return result // Skip this node
+  //     }
+
+  //     // If the current node is a directory and has children, recurse into its children
+  //     if (node.type === 'directory' && node.children) {
+  //       // Filter out the deleted node from the children
+  //       const filteredChildren = deleteNode(
+  //         node.children,
+  //         pathToDelete,
+  //         fullPath // Pass the current path as the new parent path
+  //       )
+  //       // Add the current node with the filtered children to the result
+  //       result.push({ ...node, children: filteredChildren })
+  //     } else {
+  //       // Add the current node to the result
+  //       result.push(node)
+  //     }
+
+  //     return result
+  //   }, [])
+  // }
 
   // Return the reactive state and functions for use
   return {

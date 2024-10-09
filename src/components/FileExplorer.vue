@@ -24,6 +24,7 @@
           {{ node.name }}
         </span>
 
+        <!-- nested directories -->
         <ul v-if="isNodeExpanded(node.name)" class="pl-[20px]">
           <FileExplorer
             v-for="child in node.children"
@@ -157,7 +158,7 @@ const getArrowIcon = (node: FileNode) => {
 const handleRightClick = (
   event: MouseEvent,
   node: FileNode,
-  parentPath: string
+  parentPath?: string
 ) => {
   const fullPath = getNodeKey(node.name, parentPath || '')
   if (window.confirm(`Are you sure you want to delete ${fullPath}?`)) {

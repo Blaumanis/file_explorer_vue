@@ -16,16 +16,16 @@ export type FileExplorerProps = {
   fileTree: FileNode[]
   isCreatingFolder: boolean
   newFolderName: string
+  isCreatingFile: boolean
+  newFileName: string
+  targetDirPath: string
+  expandedDirPath: string
   setNewFolderName: (name: string) => void
+  setNewFileName: (name: string) => void
   handleAddFolder: () => void
   handleAddFile: () => void
-  newFileName: string
-  setNewFileName: (name: string) => void
-  isCreatingFile: boolean
-  targetDirPath: string
+  handleDelete: (path: string) => void
   setTargetDirPath: (value: string) => void
   setExpandedDirPath: (value: string) => void
   clearCreationState: () => void
-  handleDelete: (path: string) => void
-  expandedDirPath: string
 }

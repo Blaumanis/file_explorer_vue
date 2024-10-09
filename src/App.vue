@@ -37,8 +37,8 @@
         :setExpandedDirPath="(path) => (expandedDirPath = path)"
       />
     </div>
-    <Modal v-if="loading || error" :loading="loading" :error="error" />
   </main>
+  <Modal v-if="loading || error" :loading="loading" :error="error" />
 </template>
 
 <script lang="ts" setup>
@@ -75,10 +75,10 @@ const fetchFileData = async () => {
     const structuredData = structureFilePaths(response.data.filepaths)
     fileTree.value = structuredData
     localStorage.setItem('fileTree', JSON.stringify(structuredData))
-    loading.value = false // Ensure loading is set to false after data is fetched
+    // loading.value = false // Ensure loading is set to false after data is fetched
   } catch (err) {
     error.value = 'Failed to load file paths.'
-    loading.value = false // Ensure loading is set to false on error as well
+    // loading.value = false // Ensure loading is set to false on error as well
   }
 }
 
